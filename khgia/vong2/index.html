@@ -11,7 +11,7 @@
 
     <style>
         /* =========================================
-           1. HỆ THỐNG MÀU SẮC & BIẾN ĐỒNG BỘ
+1. HỆ THỐNG MÀU SẮC & BIẾN ĐỒNG BỘ
            ========================================= */
         :root {
             --navy-dark: #000b16;
@@ -37,7 +37,7 @@
         }
 
         /* =========================================
-           2. RESET & NỀN CHUNG
+2. RESET & NỀN CHUNG
            ========================================= */
         *, *::before, *::after {
             box-sizing: border-box;
@@ -70,7 +70,7 @@
         }
 
         /* =========================================
-           3. HEADER, ĐỒNG HỒ & PROGRESS BAR
+3. HEADER, ĐỒNG HỒ & PROGRESS BAR
            ========================================= */
         .header {
             width: 100%;
@@ -227,7 +227,7 @@
         }
 
         /* =========================================
-           4. BỐ CỤC CHÍNH (2 CỘT CÂN ĐỐI)
+4. BỐ CỤC CHÍNH (2 CỘT CÂN ĐỐI)
            ========================================= */
         .main-content {
             flex: 1;
@@ -257,15 +257,16 @@
         }
 
         /* =========================================
-           5. KHUNG HÌNH ẢNH, 4 MẢNH GHÉP & Ô TRUNG TÂM TRÒN
+5. KHUNG HÌNH ẢNH FULL KHUNG, 4 MẢNH GHÉP & Ô TRUNG TÂM
            ========================================= */
         .puzzle-wrapper {
             width: 100%;
             background: rgba(0, 17, 33, 0.88);
             border: 2px solid var(--cyan);
-            padding: clamp(8px, 1vw, 14px);
+            padding: 0;
             border-radius: var(--radius-lg);
-            box-shadow: var(--glow-cyan), inset 0 0 16px rgba(117, 223, 255, 0.08);
+            overflow: hidden;
+            box-shadow: var(--glow-cyan);
             transition: all 0.45s ease-in-out;
         }
 
@@ -276,6 +277,7 @@
             width: min(88vw, 960px);
             transform: translate(-50%, -50%);
             z-index: 9999;
+            padding: 12px;
             border-color: var(--success);
             box-shadow: 0 0 60px rgba(52, 224, 98, 0.65), 0 0 120px rgba(0, 0, 0, 0.9);
             background: rgba(0, 11, 22, 0.98);
@@ -290,10 +292,9 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            border: 2px solid var(--cyan);
-            border-radius: 10px;
+            border: none;
+            border-radius: 0;
             overflow: hidden;
-            box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45);
         }
 
         .piece {
@@ -323,22 +324,19 @@
         .p3 { top: 50%; left: 0; }
         .p4 { top: 50%; left: 50%; }
 
-        /* Ô trung tâm hình tròn ở chính giữa 4 mảnh ghép */
+        /* Ô trung tâm hình tròn ở chính giữa 4 mảnh ghép (phóng to gấp đôi) */
         .piece-center {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 28cqi;
-            height: 28cqi;
-            min-width: 72px;
-            min-height: 72px;
-            max-width: 185px;
-            max-height: 185px;
+            height: 82%;
+            width: auto;
+            aspect-ratio: 1 / 1;
             border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #0d7ab3, #022038 78%);
-            border: 3px solid var(--gold);
-            box-shadow: 0 0 24px rgba(255, 211, 78, 0.55), inset 0 0 16px rgba(117, 223, 255, 0.3);
+            border: 4px solid var(--gold);
+            box-shadow: 0 0 28px rgba(255, 211, 78, 0.6), inset 0 0 20px rgba(117, 223, 255, 0.35);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -346,9 +344,9 @@
             text-align: center;
             color: var(--gold-light);
             font-weight: 900;
-            font-size: clamp(0.85rem, 3.6cqi, 1.75rem);
+            font-size: clamp(1.4rem, 6.5cqi, 3.2rem);
             line-height: 1.15;
-            letter-spacing: 0.8px;
+            letter-spacing: 1px;
             text-transform: uppercase;
             text-shadow: var(--glow-gold);
             z-index: 3;
@@ -399,7 +397,7 @@
         }
 
         /* =========================================
-           6. BẢNG CÂU HỎI & ĐÁP ÁN
+6. BẢNG CÂU HỎI & ĐÁP ÁN
            ========================================= */
         .question-board {
             container-type: inline-size;
@@ -475,7 +473,7 @@
         }
 
         /* =========================================
-           7. BẢNG TỪ KHÓA HÀNG NGANG
+7. BẢNG TỪ KHÓA HÀNG NGANG
            ========================================= */
         .words-board {
             display: flex;
@@ -539,7 +537,7 @@
         }
 
         /* =========================================
-           8. BẢNG CHƯỚNG NGẠI VẬT
+8. BẢNG CHƯỚNG NGẠI VẬT
            ========================================= */
         .cnv-board {
             container-type: inline-size;
@@ -568,7 +566,7 @@
         }
 
         /* =========================================
-           9. BẢNG ĐIỂM 4 ĐỘI + HIỆU ỨNG CỘNG/TRỪ 2S
+9. BẢNG ĐIỂM 4 ĐỘI + HIỆU ỨNG CỘNG/TRỪ 2S
            ========================================= */
         .teams-grid {
             display: grid;
@@ -662,7 +660,7 @@
         }
 
         /* =========================================
-           10. FIX KHUNG VỪA KHÍT 100VH TRÊN DESKTOP
+10. FIX KHUNG VỪA KHÍT 100VH TRÊN DESKTOP
            ========================================= */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--navy-dark); }
@@ -697,15 +695,14 @@
 
             .puzzle-wrapper:not(.zoomed) {
                 flex: 0 0 auto;
-                padding: 8px;
+                padding: 0;
             }
 
             .puzzle-wrapper:not(.zoomed) .puzzle-box {
-                width: auto;
+                width: 100%;
                 height: 44vh;
-                max-width: 100%;
-                margin: 0 auto;
-                aspect-ratio: 3 / 2;
+                aspect-ratio: auto;
+                margin: 0;
             }
 
             .question-board {
