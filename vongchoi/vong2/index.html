@@ -1396,9 +1396,12 @@
             if (!inp || !btn) return;
 
             const curQ = String(globalTrangThai.cauHoiHienTai || "");
+            const isCenterQ = isCenterQuestion(curQ);
             const showAns = (globalTrangThai.showAnswer === true || globalTrangThai.showAnswer === "true")
                 || Boolean(globalMatchState.config && globalMatchState.config.show_dapan === true);
-            const canAnswer = Boolean(curQ) && !isTimeUpV2 && !timerPausedV2 && !showAns;
+
+            // Câu trung tâm khóa ô nhập trên máy tính
+            const canAnswer = Boolean(curQ) && !isCenterQ && !isTimeUpV2 && !timerPausedV2 && !showAns;
 
             inp.disabled = !canAnswer;
             btn.disabled = !canAnswer;
@@ -1406,6 +1409,9 @@
             if (!curQ) {
                 fb.innerText = "Chờ câu hỏi từ MC...";
                 fb.className = "submit-feedback";
+            } else if (isCenterQ) {
+                fb.innerText = "🎙 Câu Trung Tâm: Trả lời trực tiếp với MC!";
+                fb.className = "submit-feedback ok";
             } else if (showAns) {
                 fb.innerText = "Đã công bố đáp án.";
                 fb.className = "submit-feedback";
