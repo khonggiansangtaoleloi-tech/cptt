@@ -878,43 +878,6 @@
         // ==========================================
         // LƯU ĐÁP ÁN TRỰC TIẾP TRÊN MÁY TÍNH
         // ==========================================
-        async function saveDirectAnswer(idx, teamName, dbCol) {
-            const inputEl = document.getElementById(`ans_input_${idx}`);
-            if (!inputEl) return;
-            const ansText = inputEl.value.trim();
-            const curQ = String(globalTrangThai.cauHoiHienTai || "");
-            const timeStr = formatElapsedTime();
-            const timeNum = parseFloat(timeStr) || 0;
-
-            showLoading(`Đang lưu đáp án ${teamName}...`);
-            try {
-                // 1. Lưu vào match_state/dapan_cacdoi/<doiX>
-                if (dbCol) {
-                    await fbSend("PUT", `/match_state/dapan_cacdoi/${dbCol}`, {
-                        dapan: ansText,
-                        thoigian_nop: timeNum
-                    });
-                }
-
-                // 2. Lưu vào submittedAnswers/<cauHoi>/<teamName> để đồng bộ xem lại đáp án
-                if (curQ) {
-                    await fbSend("PUT", `/submittedAnswers/${curQ}/${encodeURIComponent(teamName)}`, {
-                        answer: ansText,
-                        time: timeStr
-                    });
-                }
-
-                // Cập nhật hiển thị ngay lập tức
-                const ansSpan = document.getElementById(`ans_${idx}`);
-                const timeSpan = document.getElementById(`time_${idx}`);
-                if (ansSpan) ansSpan.innerText = ansText || "Chưa trả lời";
-                if (timeSpan) timeSpan.innerText = ansText ? `⏱ ${timeStr}` : "⏱ --";
-            } catch (e) {
-                console.error("Lỗi lưu đáp án:", e);
-                await showCustomAlert("Không thể lưu đáp án, vui lòng thử lại!");
-            }
-            hideLoading();
-        }
 
         function buildEmptyDapanCacDoi() {
             const emptyObj = {};
@@ -1002,10 +965,6 @@
                             <div class="ans-saved-line">
                                 <span>ĐA đội: <span id="ans_${idx}" class="ans-saved-val">${displayAnsText}</span></span>
                                 <span id="time_${idx}" class="time-text">${displayTime}</span>
-                            </div>
-                            <div class="direct-ans-row">
-                                <input type="text" id="ans_input_${idx}" class="direct-ans-input" placeholder="Nhập đáp án ${t}..." value="${ans.replace(/"/g, '&quot;')}" onkeydown="if(event.key==='Enter') saveDirectAnswer(${idx}, '${t.replace(/'/g, "\\'")}', '${dbCol}')">
-                                <button class="btn-save-ans" onclick="saveDirectAnswer(${idx}, '${t.replace(/'/g, "\\'")}', '${dbCol}')">Lưu</button>
                             </div>
                         </div>
                         <div class="score-ctrl">
