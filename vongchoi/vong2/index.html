@@ -702,7 +702,11 @@
             filter: brightness(1.1);
             transform: translateY(-2px);
         }
-
+        .btn-submit-ans.confirming {
+            background: linear-gradient(135deg, #ff416c, #ff1e4d);
+            color: var(--white);
+            box-shadow: var(--glow-danger);
+        }
         .btn-submit-ans:disabled {
             background: #334155;
             color: #94a3b8;
@@ -890,6 +894,7 @@
                             placeholder="Gõ đáp án tại đây..."
                             autocomplete="off"
                             disabled
+                            oninput="resetConfirmSubmit()"
                             onkeydown="if(event.key==='Enter') submitMyAnswer()"
                         >
                         <button id="btn-submit-ans" class="btn-submit-ans" onclick="submitMyAnswer()" disabled>
@@ -932,6 +937,9 @@
         let lastQuestionIdV2 = null;
         let isTimeUpV2 = false;
         let isSubmitting = false;
+        let needAutoFocus = false;
+        let isConfirmingSubmit = false;
+        let confirmSubmitTimer = null;
 
         function escapeHtml(str) {
             return String(str)
@@ -1054,76 +1062,13 @@
             return Math.max(0, endTimeTimestampV2 - Date.now());
         }
 
-        async function submitMyAnswer() {
-            const curQ = String(globalTrangThai.cauHoiHienTai || "");
-            const showAns = (globalTrangThai.showAnswer === true || globalTrangThai.showAnswer === "true")
-                || Boolean(globalMatchState.config && globalMatchState.config.show_dapan === true);
-
-            if (!curQ || isTimeUpV2 || timerPausedV2 || showAns || isSubmitting) return;
-
-            const inp = document.getElementById('player-ans-input');
-            const fb = document.getElementById('submit-feedback');
-            const ansText = inp.value.trim();
-
-            if (!ansText) {
-                fb.innerText = "Vui lòng nhập đáp án trước khi gửi!";
-                fb.className = "submit-feedback err";
-                inp.focus();
-                return;
-            }
-
-            if (!myTeamCol) {
-                fb.innerText = "Chưa xác định được mã đội, vui lòng tải lại trang!";
-                fb.className = "submit-feedback err";
-                return;
-            }
-
-            isSubmitting = true;
-            const remMs = getRemainingMs();
-            const elapsedSec = Math.max(0.01, Number(((30000 - remMs) / 1000).toFixed(2)));
-            const timeStr = `${elapsedSec.toFixed(2)}s`;
-
-            fb.innerText = "Đang gửi đáp án...";
-            fb.className = "submit-feedback";
-
-            try {
-                // 1. Ghi vào match_state/dapan_cacdoi/<doiX>
-                const res1 = await fetch(`${FB_VONG2}/match_state/dapan_cacdoi/${myTeamCol}.json`, {
-                    method: "PUT",
-                    body: JSON.stringify({
-                        dapan: ansText,
-                        thoigian_nop: elapsedSec
-                    })
-                });
-                if (!res1.ok) throw new Error("HTTP " + res1.status);
-
-                // 2. Ghi vào submittedAnswers/<cau>/<teamName> để đồng bộ xem lại đáp án ở Admin
-                await fetch(`${FB_VONG2}/submittedAnswers/${curQ}/${encodeURIComponent(myTeamName)}.json`, {
-                    method: "PUT",
-                    body: JSON.stringify({
-                        answer: ansText,
-                        time: timeStr
-                    })
-                });
-
-                // Cập nhật local ngay lập tức
-                globalMatchState.dapan_cacdoi = globalMatchState.dapan_cacdoi || {};
-                globalMatchState.dapan_cacdoi[myTeamCol] = {
-                    dapan: ansText,
-                    thoigian_nop: elapsedSec
-                };
-
-                fb.innerText = `✓ Đã gửi lúc ${timeStr} (có thể sửa trước khi hết giờ)`;
-                fb.className = "submit-feedback ok";
-                updatePlayerCardUI();
-            } catch (e) {
-                console.error("Lỗi gửi đáp án:", e);
-                fb.innerText = "Lỗi mạng! Vui lòng bấm gửi lại.";
-                fb.className = "submit-feedback err";
-            } finally {
-                isSubmitting = false;
-            }
+        function hasSubmittedCurrentQuestion() {
+            if (!myTeamCol || !globalMatchState || !globalMatchState.dapan_cacdoi) return false;
+            const myAnsObj = globalMatchState.dapan_cacdoi[myTeamCol] || {};
+            return Boolean((myAnsObj.dapan || "").trim());
         }
+
+        
 
         // ==========================================
         // 3. ĐỒNG HỒ ĐẾM NGƯỢC & PROGRESS BAR
@@ -1163,6 +1108,7 @@
                 if (!isTimeUpV2) {
                     isTimeUpV2 = true;
                     updateAnswerInputState();
+                    if (!canAnswer) resetConfirmSubmit();
                     processGameState();
                 }
             } else if (timerPausedV2) {
@@ -1344,19 +1290,71 @@
             }
         }
 
-        function resetLocalInput() {
-            const inp = document.getElementById('player-ans-input');
-            const fb = document.getElementById('submit-feedback');
-            if (inp) inp.value = "";
-            if (fb) {
-                fb.innerText = "Nhập đáp án và nhấn Enter hoặc nút Gửi";
-                fb.className = "submit-feedback";
-            }
-        }
 
         // ==========================================
         // 6. CẬP NHẬT UI THẺ ĐỘI & Ô NHẬP ĐÁP ÁN
         // ==========================================
+        function resetLocalInput() {
+            if (typeof resetConfirmSubmit === "function") resetConfirmSubmit();
+            const inp = document.getElementById('player-ans-input');
+            const fb = document.getElementById('submit-feedback');
+            if (inp) inp.value = "";
+            if (fb) {
+                fb.innerText = "Nhập đáp án và bấm Gửi 2 lần để chốt";
+                fb.className = "submit-feedback";
+            }
+            needAutoFocus = true;
+        }
+
+        function updateAnswerInputState() {
+            const inp = document.getElementById('player-ans-input');
+            const btn = document.getElementById('btn-submit-ans');
+            const fb = document.getElementById('submit-feedback');
+            if (!inp || !btn) return;
+
+            const curQ = String(globalTrangThai.cauHoiHienTai || "");
+            const isCenterQ = isCenterQuestion(curQ);
+            const showAns = (globalTrangThai.showAnswer === true || globalTrangThai.showAnswer === "true")
+                || Boolean(globalMatchState.config && globalMatchState.config.show_dapan === true);
+            const hasSubmitted = hasSubmittedCurrentQuestion();
+
+            const canAnswer = Boolean(curQ) && !isCenterQ && !isTimeUpV2 && !timerPausedV2 && !showAns && !hasSubmitted;
+
+            const wasDisabled = inp.disabled;
+            inp.disabled = !canAnswer;
+            btn.disabled = !canAnswer;
+
+            if (!canAnswer && typeof resetConfirmSubmit === "function") resetConfirmSubmit();
+
+            if (canAnswer && (wasDisabled || needAutoFocus)) {
+                needAutoFocus = false;
+                inp.focus();
+            }
+
+            if (!curQ) {
+                fb.innerText = "Chờ câu hỏi từ MC...";
+                fb.className = "submit-feedback";
+            } else if (isCenterQ) {
+                fb.innerText = "🎙 Câu Trung Tâm: Trả lời trực tiếp với MC!";
+                fb.className = "submit-feedback ok";
+            } else if (showAns) {
+                fb.innerText = "Đã công bố đáp án.";
+                fb.className = "submit-feedback";
+            } else if (hasSubmitted) {
+                const myTime = Number(globalMatchState.dapan_cacdoi[myTeamCol]?.thoigian_nop) || 0;
+                fb.innerText = myTime > 0
+                    ? `✓ Đã chốt đáp án lúc ${myTime.toFixed(2)}s (không thể sửa)`
+                    : "✓ Đã chốt đáp án (không thể sửa)";
+                fb.className = "submit-feedback ok";
+            } else if (isTimeUpV2) {
+                fb.innerText = "Đã hết thời gian trả lời!";
+                fb.className = "submit-feedback err";
+            } else if (timerPausedV2) {
+                fb.innerText = "Đồng hồ đang tạm dừng...";
+                fb.className = "submit-feedback";
+            }
+        }
+        
         function updatePlayerCardUI() {
             const card = document.getElementById('my-team-card');
             const nameEl = document.getElementById('my-team-name');
@@ -1394,41 +1392,111 @@
                 }
             }
         }
-
-        function updateAnswerInputState() {
-            const inp = document.getElementById('player-ans-input');
+        function resetConfirmSubmit() {
+            isConfirmingSubmit = false;
+            if (confirmSubmitTimer) {
+                clearTimeout(confirmSubmitTimer);
+                confirmSubmitTimer = null;
+            }
             const btn = document.getElementById('btn-submit-ans');
-            const fb = document.getElementById('submit-feedback');
-            if (!inp || !btn) return;
+            if (btn) {
+                btn.innerText = "GỬI ĐÁP ÁN";
+                btn.classList.remove('confirming');
+            }
+        }
 
+        async function submitMyAnswer() {
             const curQ = String(globalTrangThai.cauHoiHienTai || "");
             const isCenterQ = isCenterQuestion(curQ);
             const showAns = (globalTrangThai.showAnswer === true || globalTrangThai.showAnswer === "true")
                 || Boolean(globalMatchState.config && globalMatchState.config.show_dapan === true);
 
-            // Câu trung tâm khóa ô nhập trên máy tính
-            const canAnswer = Boolean(curQ) && !isCenterQ && !isTimeUpV2 && !timerPausedV2 && !showAns;
+            if (!curQ || isCenterQ || isTimeUpV2 || timerPausedV2 || showAns || isSubmitting || hasSubmittedCurrentQuestion()) return;
 
-            inp.disabled = !canAnswer;
-            btn.disabled = !canAnswer;
+            const inp = document.getElementById('player-ans-input');
+            const btn = document.getElementById('btn-submit-ans');
+            const fb = document.getElementById('submit-feedback');
+            const ansText = inp.value.trim();
 
-            if (!curQ) {
-                fb.innerText = "Chờ câu hỏi từ MC...";
-                fb.className = "submit-feedback";
-            } else if (isCenterQ) {
-                fb.innerText = "🎙 Câu Trung Tâm: Trả lời trực tiếp với MC!";
-                fb.className = "submit-feedback ok";
-            } else if (showAns) {
-                fb.innerText = "Đã công bố đáp án.";
-                fb.className = "submit-feedback";
-            } else if (isTimeUpV2) {
-                fb.innerText = "Đã hết thời gian trả lời!";
+            if (!ansText) {
+                fb.innerText = "Vui lòng nhập đáp án trước khi gửi!";
                 fb.className = "submit-feedback err";
-            } else if (timerPausedV2) {
-                fb.innerText = "Đồng hồ đang tạm dừng...";
-                fb.className = "submit-feedback";
+                inp.focus();
+                return;
+            }
+
+            if (!myTeamCol) {
+                fb.innerText = "Chưa xác định được mã đội, vui lòng tải lại trang!";
+                fb.className = "submit-feedback err";
+                return;
+            }
+
+            // Lần bấm 1: Yêu cầu xác nhận lần 2
+            if (!isConfirmingSubmit) {
+                isConfirmingSubmit = true;
+                if (btn) {
+                    btn.innerText = "⚠ BẤM LẦN NỮA ĐỂ CHỐT ĐÁP ÁN";
+                    btn.classList.add('confirming');
+                }
+                fb.innerText = "Bấm Gửi (hoặc Enter) thêm 1 lần nữa để chốt (chỉ gửi 1 lần)!";
+                fb.className = "submit-feedback err";
+
+                if (confirmSubmitTimer) clearTimeout(confirmSubmitTimer);
+                confirmSubmitTimer = setTimeout(() => {
+                    if (isConfirmingSubmit) {
+                        resetConfirmSubmit();
+                        fb.innerText = "Đã hủy chờ xác nhận. Bấm Gửi để nộp lại.";
+                        fb.className = "submit-feedback";
+                    }
+                }, 5000);
+                return;
+            }
+
+            // Lần bấm 2: Chốt và gửi lên Firebase
+            resetConfirmSubmit();
+            isSubmitting = true;
+            const remMs = getRemainingMs();
+            const elapsedSec = Math.max(0.01, Number(((30000 - remMs) / 1000).toFixed(2)));
+            const timeStr = `${elapsedSec.toFixed(2)}s`;
+
+            fb.innerText = "Đang gửi đáp án...";
+            fb.className = "submit-feedback";
+
+            try {
+                const res1 = await fetch(`${FB_VONG2}/match_state/dapan_cacdoi/${myTeamCol}.json`, {
+                    method: "PUT",
+                    body: JSON.stringify({
+                        dapan: ansText,
+                        thoigian_nop: elapsedSec
+                    })
+                });
+                if (!res1.ok) throw new Error("HTTP " + res1.status);
+
+                await fetch(`${FB_VONG2}/submittedAnswers/${curQ}/${encodeURIComponent(myTeamName)}.json`, {
+                    method: "PUT",
+                    body: JSON.stringify({
+                        answer: ansText,
+                        time: timeStr
+                    })
+                });
+
+                globalMatchState.dapan_cacdoi = globalMatchState.dapan_cacdoi || {};
+                globalMatchState.dapan_cacdoi[myTeamCol] = {
+                    dapan: ansText,
+                    thoigian_nop: elapsedSec
+                };
+
+                updatePlayerCardUI();
+                updateAnswerInputState();
+            } catch (e) {
+                console.error("Lỗi gửi đáp án:", e);
+                fb.innerText = "Lỗi mạng! Vui lòng bấm gửi lại.";
+                fb.className = "submit-feedback err";
+            } finally {
+                isSubmitting = false;
             }
         }
+
 
         // ==========================================
         // 7. RENDER BẢNG TỪ KHÓA, CNV & CÂU HỎI
@@ -1530,7 +1598,7 @@
             } else if (isCenterQ) {
                 qBox.innerHTML = `
                     <div class="q-subject">[ GỢI Ý CÂU TRUNG TÂM - ${displayLen} KÝ TỰ ]</div>
-                    <div class="q-direct-badge">💻 TRẢ LỜI TRÊN MÁY TÍNH</div>
+                    <div class="q-direct-badge">🎙 TRẢ LỜI TRỰC TIẾP VỚI MC</div>
                     <div class="q-text">${qData.noiDung}</div>
                     ${ansHtml}`;
             } else {
