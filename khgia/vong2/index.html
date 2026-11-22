@@ -11,7 +11,7 @@
 
     <style>
         /* =========================================
-1. HỆ THỐNG MÀU SẮC & BIẾN ĐỒNG BỘ
+           1. HỆ THỐNG MÀU SẮC & BIẾN ĐỒNG BỘ
            ========================================= */
         :root {
             --navy-dark: #000b16;
@@ -37,7 +37,7 @@
         }
 
         /* =========================================
-2. RESET & NỀN CHUNG
+           2. RESET & NỀN CHUNG
            ========================================= */
         *, *::before, *::after {
             box-sizing: border-box;
@@ -70,7 +70,7 @@
         }
 
         /* =========================================
-3. HEADER, ĐỒNG HỒ & PROGRESS BAR
+           3. HEADER, ĐỒNG HỒ & PROGRESS BAR
            ========================================= */
         .header {
             width: 100%;
@@ -227,7 +227,7 @@
         }
 
         /* =========================================
-4. BỐ CỤC CHÍNH (2 CỘT CÂN ĐỐI)
+           4. BỐ CỤC CHÍNH (2 CỘT CÂN ĐỐI)
            ========================================= */
         .main-content {
             flex: 1;
@@ -257,7 +257,7 @@
         }
 
         /* =========================================
-5. KHUNG HÌNH ẢNH FULL KHUNG, 4 MẢNH GHÉP & Ô TRUNG TÂM
+           5. KHUNG HÌNH ẢNH FULL KHUNG & MẢNH GHÉP
            ========================================= */
         .puzzle-wrapper {
             width: 100%;
@@ -324,7 +324,6 @@
         .p3 { top: 50%; left: 0; }
         .p4 { top: 50%; left: 50%; }
 
-        /* Ô trung tâm hình tròn ở chính giữa 4 mảnh ghép (phóng to gấp đôi) */
         .piece-center {
             position: absolute;
             top: 50%;
@@ -397,7 +396,7 @@
         }
 
         /* =========================================
-6. BẢNG CÂU HỎI & ĐÁP ÁN
+           6. BẢNG CÂU HỎI & ĐÁP ÁN
            ========================================= */
         .question-board {
             container-type: inline-size;
@@ -428,31 +427,43 @@
         .q-subject {
             text-align: center;
             color: var(--gold);
-            font-size: clamp(1.3rem, 2.8cqi, 2rem);
-            font-weight: 800;
-            letter-spacing: 1.2px;
+            font-size: clamp(1rem, 2.4cqi, 1.55rem);
+            font-weight: 900;
+            letter-spacing: 1px;
             text-transform: uppercase;
+            text-shadow: var(--glow-gold);
+            flex-shrink: 0;
+        }
+
+        .q-subject + .q-answer-reveal {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(2.8rem, 9cqi, 6.2rem);
+            letter-spacing: 2px;
         }
 
         .q-direct-badge {
             align-self: center;
             display: inline-block;
-            padding: 5px 16px;
+            padding: 4px 14px;
             border-radius: 20px;
-            background: rgba(255, 65, 108, 0.2);
-            border: 1.5px solid var(--danger);
-            color: #ff9bb3;
-            font-size: clamp(0.95rem, 2cqi, 1.35rem);
+            background: rgba(117, 223, 255, 0.16);
+            border: 1.5px solid var(--cyan);
+            color: var(--cyan);
+            font-size: clamp(0.85rem, 1.8cqi, 1.15rem);
             font-weight: 800;
             letter-spacing: 0.8px;
             text-transform: uppercase;
+            flex-shrink: 0;
         }
 
         .q-text {
             width: 100%;
             margin: auto 0;
             color: var(--white);
-            font-size: clamp(1.75rem, 4.4cqi, 3.2rem);
+            font-size: clamp(1.55rem, 4cqi, 2.85rem);
             line-height: 1.38;
             font-weight: 700;
             text-align: justify;
@@ -465,15 +476,17 @@
             padding-top: 12px;
             width: 100%;
             border-top: 2px dashed var(--success);
-            font-size: clamp(1.8rem, 4.5cqi, 3.4rem);
+            font-size: clamp(2rem, 5.5cqi, 4.2rem);
             font-weight: 900;
             color: var(--success-light);
             text-shadow: var(--glow-success);
             text-transform: uppercase;
+            line-height: 1.15;
+            flex-shrink: 0;
         }
 
         /* =========================================
-7. BẢNG TỪ KHÓA HÀNG NGANG
+           7. BẢNG TỪ KHÓA HÀNG NGANG
            ========================================= */
         .words-board {
             display: flex;
@@ -537,7 +550,7 @@
         }
 
         /* =========================================
-8. BẢNG CHƯỚNG NGẠI VẬT
+           8. BẢNG CHƯỚNG NGẠI VẬT
            ========================================= */
         .cnv-board {
             container-type: inline-size;
@@ -566,7 +579,7 @@
         }
 
         /* =========================================
-9. BẢNG ĐIỂM 4 ĐỘI + HIỆU ỨNG CỘNG/TRỪ 2S
+           9. BẢNG ĐIỂM 4 ĐỘI + HIỂN THỊ ĐÁP ÁN ĐỒNG BỘ
            ========================================= */
         .teams-grid {
             display: grid;
@@ -580,11 +593,12 @@
             background: var(--card-bg);
             border: 2px solid rgba(117, 223, 255, 0.45);
             border-radius: var(--radius-md);
-            padding: clamp(12px, 1.4vw, 18px);
+            padding: clamp(10px, 1.2vw, 16px);
             text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            gap: 6px;
             position: relative;
             overflow: hidden;
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
@@ -617,10 +631,11 @@
 
         .team-name {
             color: var(--gold);
-            font-size: clamp(1rem, 6.2cqi, 2.2rem);
+            font-size: clamp(0.95rem, 6cqi, 1.9rem);
             font-weight: 900;
             text-transform: uppercase;
             text-shadow: var(--glow-gold);
+            line-height: 1.15;
         }
 
         .team-score {
@@ -630,7 +645,7 @@
             justify-content: center;
             font-family: 'JetBrains Mono', monospace;
             font-variant-numeric: tabular-nums;
-            font-size: clamp(3.2rem, 22cqi, 5.5rem);
+            font-size: clamp(2.4rem, 16cqi, 4.4rem);
             color: var(--gold-light);
             font-weight: 800;
             margin: 0;
@@ -641,26 +656,55 @@
         .team-answer-box {
             margin-top: 0;
             padding: 8px 10px;
-            background: rgba(117, 223, 255, 0.06);
-            border: 1px dashed rgba(117, 223, 255, 0.4);
+            background: rgba(117, 223, 255, 0.08);
+            border: 1.5px solid rgba(117, 223, 255, 0.35);
             border-radius: 8px;
-            min-height: 40px;
+            min-height: 46px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 4px;
+            align-items: center;
+            gap: 2px;
         }
 
-        .status-direct {
-            color: var(--gold-light);
+        .team-answer-box.has-answer {
+            background: rgba(52, 224, 98, 0.14);
+            border-color: rgba(52, 224, 98, 0.65);
+        }
+
+        .team-ans-text {
+            color: var(--white);
             font-weight: 800;
-            font-size: clamp(0.85rem, 4.5cqi, 1.35rem);
+            font-size: clamp(0.9rem, 5cqi, 1.45rem);
+            text-transform: uppercase;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .team-ans-locked {
+            color: var(--success-light);
+            font-weight: 800;
+            font-size: clamp(0.85rem, 4.4cqi, 1.25rem);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
+        .team-ans-empty {
+            color: var(--muted);
+            font-weight: 600;
+            font-style: italic;
+            font-size: clamp(0.8rem, 4cqi, 1.1rem);
+        }
+
+        .team-ans-time {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--gold);
+            font-size: clamp(0.75rem, 3.6cqi, 1rem);
+            font-weight: 700;
+        }
+
         /* =========================================
-10. FIX KHUNG VỪA KHÍT 100VH TRÊN DESKTOP
+           10. FIX KHUNG VỪA KHÍT 100VH TRÊN DESKTOP
            ========================================= */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--navy-dark); }
@@ -745,7 +789,7 @@
             }
 
             .team-answer-box {
-                min-height: 38px;
+                min-height: 44px;
                 padding: 6px 8px;
             }
         }
@@ -916,6 +960,7 @@
 
         let globalCauHoiV2 = {};
         let globalTrangThai = {};
+        let globalMatchState = {};
 
         let endTimeTimestampV2 = null;
         let timerPausedV2 = false;
@@ -934,7 +979,7 @@
         window.activeTeams = [];
 
         // ==========================================
-        // 3. TỰ ĐỘNG PHÁT NHẠC CHÀO MỪNG & BRAVO KHI HIỆN ĐÁP ÁN
+        // 3. TỰ ĐỘNG PHÁT NHẠC CHÀO MỪNG & BRAVO
         // ==========================================
         function checkAndTriggerAnswerSound() {
             if (!fbCauHoiHienTai || !fbShowAnswer) {
@@ -943,7 +988,7 @@
             }
 
             const curKey = `${fbCauHoiHienTai}_${globalTrangThai.answerTrigger || ""}`;
-            if (isCenterQuestion(fbCauHoiHienTai)) return; // Câu trung tâm phát trong triggerFireworksAndZoom
+            if (isCenterQuestion(fbCauHoiHienTai)) return;
 
             if (lastAnswerSoundKey !== curKey) {
                 lastAnswerSoundKey = curKey;
@@ -954,7 +999,6 @@
 
         function checkAndTriggerBravo() {
             const isCenter = isCenterQuestion(fbCauHoiHienTai);
-            // Chỉ kích hoạt Bravo & hiện đáp án trung tâm khi Admin bấm nút Đáp án (fbShowAnswer === true)
             if (!isCenter || !fbShowAnswer) {
                 wasBravoTriggered = false;
                 isBravoFinished = false;
@@ -1015,7 +1059,7 @@
         }
 
         // ==========================================
-        // 4. ĐỒNG HỒ KHÁN GIẢ + ĐỒNG BỘ SOUND30S.MP3
+        // 4. ĐỒNG HỒ KHÁN GIẢ + SOUND30S.MP3
         // ==========================================
         function updateAudienceTimer() {
             const timerEl = document.getElementById('audience-timer');
@@ -1059,6 +1103,7 @@
                 if (!isTimeUpV2) {
                     isTimeUpV2 = true;
                     renderQBoard();
+                    renderTeamsInstantly();
                     checkAndTriggerAnswerSound();
                     checkAndTriggerBravo();
                 }
@@ -1107,7 +1152,7 @@
         }
 
         // ==========================================
-        // 5. DANH SÁCH ĐỘI & ĐIỂM SỐ (HIỆU ỨNG XANH/ĐỎ 2S)
+        // 5. DANH SÁCH ĐỘI & ĐIỂM SỐ
         // ==========================================
         function triggerScoreFlash(col, type) {
             scoreFlashState[col] = type;
@@ -1170,7 +1215,7 @@
         }
 
         // ==========================================
-        // 6. TRẠNG THÁI GAME VÒNG 2 (ĐỒNG BỘ ADMIN & FIREBASE)
+        // 6. TRẠNG THÁI GAME VÒNG 2
         // ==========================================
         async function fetchVong2Data() {
             if (!FB.vong2) return;
@@ -1218,8 +1263,11 @@
                 globalCauHoiV2 = dsch;
                 const state = db.trangThai || {};
                 globalTrangThai = state;
+                globalMatchState = db.match_state || {};
+
                 fbCauHoiHienTai = state.cauHoiHienTai || "";
-                fbShowAnswer = (state.showAnswer === true || state.showAnswer === "true");
+                const showFromMatchState = Boolean(globalMatchState.config && globalMatchState.config.show_dapan === true);
+                fbShowAnswer = (state.showAnswer === true || state.showAnswer === "true" || showFromMatchState);
 
                 if (state.blurredPieces !== undefined) {
                     window.fbBlurredArr = state.blurredPieces
@@ -1249,7 +1297,6 @@
                     }
                 }
 
-                // Cập nhật 4 mảnh ghép ngoài
                 ['1', '2', '3', '4'].forEach(p => {
                     const el = document.getElementById(`piece-${p}`);
                     if (el) {
@@ -1260,7 +1307,6 @@
                     }
                 });
 
-                // Cập nhật ô trung tâm hình tròn (mảnh 5)
                 const p5El = document.getElementById('piece-5');
                 if (p5El) {
                     const isRev5 = (state['manh5'] === true || state['manh5'] === "true");
@@ -1319,7 +1365,6 @@
             }
             wordsBoard.innerHTML = wordsHtml;
 
-            // Chướng ngại vật: chỉ hiện đáp án khi bấm nút Đáp án câu trung tâm (isCenterDone)
             const cnvBoard = document.getElementById('cnv-board');
             const q5Data = globalCauHoiV2['5'];
             const activeQ = globalCauHoiV2[String(fbCauHoiHienTai)] || q5Data;
@@ -1346,10 +1391,12 @@
         }
 
         // ==========================================
-        // 8. RENDER GIAO DIỆN
+        // 8. RENDER BẢNG ĐIỂM & ĐÁP ÁN CÁC ĐỘI
         // ==========================================
         function renderTeamsInstantly() {
             let gridHtml = "";
+            const dapanCacDoi = (globalMatchState && globalMatchState.dapan_cacdoi) ? globalMatchState.dapan_cacdoi : {};
+            const revealTeamAnswers = fbShowAnswer || isTimeUpV2;
 
             if (window.activeTeams.length > 0) {
                 window.activeTeams.forEach(teamCol => {
@@ -1359,12 +1406,33 @@
                         ? 'score-up'
                         : (scoreFlashState[teamCol] === 'down' ? 'score-down' : '');
 
+                    const teamAnsObj = dapanCacDoi[teamCol] || {};
+                    const ansText = (teamAnsObj.dapan || "").trim();
+                    const timeNop = Number(teamAnsObj.thoigian_nop) || 0;
+                    const timeHtml = timeNop > 0 ? `<div class="team-ans-time">⏱ ${timeNop.toFixed(2)}s</div>` : "";
+
+                    let ansBoxCls = "";
+                    let ansContentHtml = "";
+
+                    if (!fbCauHoiHienTai) {
+                        ansContentHtml = `<div class="team-ans-empty">Đang chờ câu hỏi...</div>`;
+                    } else if (ansText) {
+                        ansBoxCls = "has-answer";
+                        if (revealTeamAnswers) {
+                            ansContentHtml = `<div class="team-ans-text">${escapeHtml(ansText)}</div>${timeHtml}`;
+                        } else {
+                            ansContentHtml = `<div class="team-ans-locked">✓ ĐÃ TRẢ LỜI</div>${timeHtml}`;
+                        }
+                    } else {
+                        ansContentHtml = `<div class="team-ans-empty">${revealTeamAnswers ? "Chưa có đáp án" : "Đang suy nghĩ..."}</div>`;
+                    }
+
                     gridHtml += `
                         <div class="team-card ${flashCls}" id="team-card-${escapeHtml(teamCol)}">
                             <div class="team-name">${escapeHtml(teamName)}</div>
                             <div class="team-score">${teamScore}</div>
-                            <div class="team-answer-box">
-                                <div class="status-direct">🎙 Trả lời trực tiếp</div>
+                            <div class="team-answer-box ${ansBoxCls}">
+                                ${ansContentHtml}
                             </div>
                         </div>`;
                 });
@@ -1405,7 +1473,7 @@
                     } else {
                         qBoard.innerHTML = `
                             <div class="q-subject">[ GỢI Ý CÂU TRUNG TÂM - ${displayLen} KÝ TỰ ]</div>
-                            <div class="q-direct-badge">🎙 TRẢ LỜI TRỰC TIẾP</div>
+                            <div class="q-direct-badge">💻 TRẢ LỜI TRÊN MÁY TÍNH</div>
                             <div class="q-text">${qData.noiDung}</div>`;
                     }
                 } else {
@@ -1414,7 +1482,7 @@
                         : "";
                     qBoard.innerHTML = `
                         <div class="q-subject">[ TỪ KHÓA SỐ ${escapeHtml(cur)} - ${displayLen} KÝ TỰ ]</div>
-                        <div class="q-direct-badge">🎙 TRẢ LỜI TRỰC TIẾP</div>
+                        <div class="q-direct-badge">💻 TRẢ LỜI TRÊN MÁY TÍNH</div>
                         <div class="q-text">${qData.noiDung}</div>
                         ${dapAnHtml}`;
                 }
