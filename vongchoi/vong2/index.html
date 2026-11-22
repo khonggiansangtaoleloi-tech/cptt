@@ -702,11 +702,7 @@
             filter: brightness(1.1);
             transform: translateY(-2px);
         }
-        .btn-submit-ans.confirming {
-            background: linear-gradient(135deg, #ff416c, #ff1e4d);
-            color: var(--white);
-            box-shadow: var(--glow-danger);
-        }
+
         .btn-submit-ans:disabled {
             background: #334155;
             color: #94a3b8;
@@ -894,7 +890,6 @@
                             placeholder="Gõ đáp án tại đây..."
                             autocomplete="off"
                             disabled
-                            oninput="resetConfirmSubmit()"
                             onkeydown="if(event.key==='Enter') submitMyAnswer()"
                         >
                         <button id="btn-submit-ans" class="btn-submit-ans" onclick="submitMyAnswer()" disabled>
@@ -938,8 +933,6 @@
         let isTimeUpV2 = false;
         let isSubmitting = false;
         let needAutoFocus = false;
-        let isConfirmingSubmit = false;
-        let confirmSubmitTimer = null;
 
         function escapeHtml(str) {
             return String(str)
@@ -1052,7 +1045,7 @@
         };
 
         // ==========================================
-        // 2. GỬI ĐÁP ÁN LÊN FIREBASE
+        // 2. HÀM HỖ TRỢ THỜI GIAN & KIỂM TRA ĐÃ NỘP
         // ==========================================
         function getRemainingMs() {
             const curQ = globalTrangThai ? (globalTrangThai.cauHoiHienTai || "") : "";
@@ -1067,8 +1060,6 @@
             const myAnsObj = globalMatchState.dapan_cacdoi[myTeamCol] || {};
             return Boolean((myAnsObj.dapan || "").trim());
         }
-
-        
 
         // ==========================================
         // 3. ĐỒNG HỒ ĐẾM NGƯỢC & PROGRESS BAR
@@ -1108,7 +1099,6 @@
                 if (!isTimeUpV2) {
                     isTimeUpV2 = true;
                     updateAnswerInputState();
-                    if (!canAnswer) resetConfirmSubmit();
                     processGameState();
                 }
             } else if (timerPausedV2) {
@@ -1263,7 +1253,6 @@
                     lastSessionKeyV2 = "";
                     isTimeUpV2 = false;
                 } else {
-                    // Reset ô nhập cả khi đổi câu mới lẫn khi MC phát lại cùng một câu
                     if (currentQ !== lastQuestionIdV2 || sessionKey !== lastSessionKeyV2) {
                         lastQuestionIdV2 = currentQ;
                         lastSessionKeyV2 = sessionKey;
@@ -1290,17 +1279,15 @@
             }
         }
 
-
         // ==========================================
-        // 6. CẬP NHẬT UI THẺ ĐỘI & Ô NHẬP ĐÁP ÁN
+        // 6. CẬP NHẬT UI THẺ ĐỘI & GỬI ĐÁP ÁN (1 LẦN)
         // ==========================================
         function resetLocalInput() {
-            if (typeof resetConfirmSubmit === "function") resetConfirmSubmit();
             const inp = document.getElementById('player-ans-input');
             const fb = document.getElementById('submit-feedback');
             if (inp) inp.value = "";
             if (fb) {
-                fb.innerText = "Nhập đáp án và bấm Gửi 2 lần để chốt";
+                fb.innerText = "Nhập đáp án và nhấn Enter hoặc nút Gửi (chỉ gửi 1 lần)";
                 fb.className = "submit-feedback";
             }
             needAutoFocus = true;
@@ -1324,8 +1311,6 @@
             inp.disabled = !canAnswer;
             btn.disabled = !canAnswer;
 
-            if (!canAnswer && typeof resetConfirmSubmit === "function") resetConfirmSubmit();
-
             if (canAnswer && (wasDisabled || needAutoFocus)) {
                 needAutoFocus = false;
                 inp.focus();
@@ -1343,8 +1328,8 @@
             } else if (hasSubmitted) {
                 const myTime = Number(globalMatchState.dapan_cacdoi[myTeamCol]?.thoigian_nop) || 0;
                 fb.innerText = myTime > 0
-                    ? `✓ Đã chốt đáp án lúc ${myTime.toFixed(2)}s (không thể sửa)`
-                    : "✓ Đã chốt đáp án (không thể sửa)";
+                    ? `✓ Đã gửi đáp án lúc ${myTime.toFixed(2)}s (không thể sửa)`
+                    : "✓ Đã gửi đáp án (không thể sửa)";
                 fb.className = "submit-feedback ok";
             } else if (isTimeUpV2) {
                 fb.innerText = "Đã hết thời gian trả lời!";
@@ -1354,7 +1339,7 @@
                 fb.className = "submit-feedback";
             }
         }
-        
+
         function updatePlayerCardUI() {
             const card = document.getElementById('my-team-card');
             const nameEl = document.getElementById('my-team-name');
@@ -1392,18 +1377,6 @@
                 }
             }
         }
-        function resetConfirmSubmit() {
-            isConfirmingSubmit = false;
-            if (confirmSubmitTimer) {
-                clearTimeout(confirmSubmitTimer);
-                confirmSubmitTimer = null;
-            }
-            const btn = document.getElementById('btn-submit-ans');
-            if (btn) {
-                btn.innerText = "GỬI ĐÁP ÁN";
-                btn.classList.remove('confirming');
-            }
-        }
 
         async function submitMyAnswer() {
             const curQ = String(globalTrangThai.cauHoiHienTai || "");
@@ -1414,7 +1387,6 @@
             if (!curQ || isCenterQ || isTimeUpV2 || timerPausedV2 || showAns || isSubmitting || hasSubmittedCurrentQuestion()) return;
 
             const inp = document.getElementById('player-ans-input');
-            const btn = document.getElementById('btn-submit-ans');
             const fb = document.getElementById('submit-feedback');
             const ansText = inp.value.trim();
 
@@ -1431,29 +1403,6 @@
                 return;
             }
 
-            // Lần bấm 1: Yêu cầu xác nhận lần 2
-            if (!isConfirmingSubmit) {
-                isConfirmingSubmit = true;
-                if (btn) {
-                    btn.innerText = "⚠ BẤM LẦN NỮA ĐỂ CHỐT ĐÁP ÁN";
-                    btn.classList.add('confirming');
-                }
-                fb.innerText = "Bấm Gửi (hoặc Enter) thêm 1 lần nữa để chốt (chỉ gửi 1 lần)!";
-                fb.className = "submit-feedback err";
-
-                if (confirmSubmitTimer) clearTimeout(confirmSubmitTimer);
-                confirmSubmitTimer = setTimeout(() => {
-                    if (isConfirmingSubmit) {
-                        resetConfirmSubmit();
-                        fb.innerText = "Đã hủy chờ xác nhận. Bấm Gửi để nộp lại.";
-                        fb.className = "submit-feedback";
-                    }
-                }, 5000);
-                return;
-            }
-
-            // Lần bấm 2: Chốt và gửi lên Firebase
-            resetConfirmSubmit();
             isSubmitting = true;
             const remMs = getRemainingMs();
             const elapsedSec = Math.max(0.01, Number(((30000 - remMs) / 1000).toFixed(2)));
@@ -1496,7 +1445,6 @@
                 isSubmitting = false;
             }
         }
-
 
         // ==========================================
         // 7. RENDER BẢNG TỪ KHÓA, CNV & CÂU HỎI
