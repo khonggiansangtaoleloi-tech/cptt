@@ -1396,7 +1396,21 @@
         function renderTeamsInstantly() {
             let gridHtml = "";
             const dapanCacDoi = (globalMatchState && globalMatchState.dapan_cacdoi) ? globalMatchState.dapan_cacdoi : {};
-            const revealTeamAnswers = fbShowAnswer || isTimeUpV2;
+            const isRoundEnded = fbShowAnswer || isTimeUpV2;
+
+            // Xếp hạng thứ tự trả lời theo thời gian nộp (nhỏ -> lớn)
+            const answeredList = window.activeTeams
+                .filter(col => Boolean((dapanCacDoi[col]?.dapan || "").trim()))
+                .sort((a, b) => {
+                    const tA = Number(dapanCacDoi[a]?.thoigian_nop) || Infinity;
+                    const tB = Number(dapanCacDoi[b]?.thoigian_nop) || Infinity;
+                    return tA - tB;
+                });
+
+            const rankMap = {};
+            answeredList.forEach((col, index) => {
+                rankMap[col] = index + 1;
+            });
 
             if (window.activeTeams.length > 0) {
                 window.activeTeams.forEach(teamCol => {
@@ -1418,13 +1432,10 @@
                         ansContentHtml = `<div class="team-ans-empty">Đang chờ câu hỏi...</div>`;
                     } else if (ansText) {
                         ansBoxCls = "has-answer";
-                        if (revealTeamAnswers) {
-                            ansContentHtml = `<div class="team-ans-text">${escapeHtml(ansText)}</div>${timeHtml}`;
-                        } else {
-                            ansContentHtml = `<div class="team-ans-locked">✓ ĐÃ TRẢ LỜI</div>${timeHtml}`;
-                        }
+                        const rank = rankMap[teamCol];
+                        ansContentHtml = `<div class="team-ans-locked">#${rank} • ✓ ĐÃ TRẢ LỜI</div>${timeHtml}`;
                     } else {
-                        ansContentHtml = `<div class="team-ans-empty">${revealTeamAnswers ? "Chưa có đáp án" : "Đang suy nghĩ..."}</div>`;
+                        ansContentHtml = `<div class="team-ans-empty">${isRoundEnded ? "Chưa trả lời" : "Đang suy nghĩ..."}</div>`;
                     }
 
                     gridHtml += `
