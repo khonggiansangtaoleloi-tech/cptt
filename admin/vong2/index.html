@@ -453,6 +453,36 @@
     </div>
 
     <script>
+        // ==========================================
+// ĐỒNG BỘ GIỜ CHUẨN VỚI MÁY CHỦ FIREBASE
+// ==========================================
+let serverTimeOffset = 0;
+
+function getServerNow() {
+    return Date.now() + serverTimeOffset;
+}
+
+async function syncServerClock(fbBaseUrl) {
+    if (!fbBaseUrl) return;
+    const clientId = "c_" + Math.random().toString(36).slice(2, 10);
+    const url = `${fbBaseUrl}/_clock_sync/${clientId}.json`;
+    try {
+        const t0 = Date.now();
+        const res = await fetch(url, {
+            method: "PUT",
+            body: JSON.stringify({ ".sv": "timestamp" })
+        });
+        const serverTs = await res.json();
+        const t1 = Date.now();
+        if (typeof serverTs === "number") {
+            serverTimeOffset = serverTs - Math.round((t0 + t1) / 2);
+        }
+        fetch(url, { method: "DELETE" }).catch(() => {});
+    } catch (e) {
+        console.warn("Không thể đồng bộ giờ máy chủ:", e);
+    }
+}
+
         const API_VONG2_CFG = "../../api/vong2.json";
         let FB_VONG2 = "";   // .../vong2
         let FB_DIEMSO = "";  // .../diemso
@@ -637,11 +667,11 @@
         }
 
         function getRemainingMs() {
-            if (!globalTrangThai.cauHoiHienTai) return 0;
-            if (adminTimerPaused) return Math.max(0, adminTimerRemaining);
-            if (!adminTimerEnd) return 0;
-            return Math.max(0, adminTimerEnd - Date.now());
-        }
+        if (!globalTrangThai.cauHoiHienTai) return 0;
+        if (adminTimerPaused) return Math.max(0, adminTimerRemaining);
+        if (!adminTimerEnd) return 0;
+        return Math.max(0, adminTimerEnd - getServerNow());
+    }
 
         function formatElapsedTime() {
             const remMs = getRemainingMs();
@@ -1229,7 +1259,7 @@
             const strId = String(id);
             showLoading("Đang phát câu hỏi & làm mới đáp án...");
             try {
-                const endTime = Date.now() + 30000;
+                const endTime = getServerNow() + 30000;
                 const emptyAnswers = buildEmptyDapanCacDoi();
 
                 adminTimerEnd = endTime;
@@ -1292,8 +1322,7 @@
                         timerRemaining: remMs
                     });
                 } else {
-                    const newEnd = Date.now() + adminTimerRemaining;
-                    adminTimerPaused = false;
+                    const newEnd = getServerNow() + adminTimerRemaining;                    adminTimerPaused = false;
                     adminTimerEnd = newEnd;
                     await fbPatchState({
                         timerPaused: false,
@@ -1461,6 +1490,7 @@
         window.onload = async function () {
             setInterval(updateAdminTimerUI, 100);
             await initFirebaseConfig();
+            await syncServerClock(FB_VONG2);
             await initTeamMapping();
             fetchMySQLScores();
             fetchSheetData();
