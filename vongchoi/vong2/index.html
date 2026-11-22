@@ -909,6 +909,7 @@
         const API_VONG2_CFG = "../../api/vong2.json";
         let FB_VONG2 = "";   // .../vong2
         let FB_DIEMSO = "";  // .../diemso
+        let lastSessionKeyV2 = "";
 
         let myFirebaseScore = null;
         let prevScore = null;
@@ -1303,6 +1304,8 @@
                 }
 
                 const currentQ = state.cauHoiHienTai || "";
+                const sessionKey = `${currentQ}_${state.timerEndTime || 0}`;
+
                 if (!currentQ) {
                     endTimeTimestampV2 = null;
                     timerPausedV2 = false;
@@ -1311,10 +1314,13 @@
                         resetLocalInput();
                     }
                     lastQuestionIdV2 = null;
+                    lastSessionKeyV2 = "";
                     isTimeUpV2 = false;
                 } else {
-                    if (currentQ !== lastQuestionIdV2) {
+                    // Reset ô nhập cả khi đổi câu mới lẫn khi MC phát lại cùng một câu
+                    if (currentQ !== lastQuestionIdV2 || sessionKey !== lastSessionKeyV2) {
                         lastQuestionIdV2 = currentQ;
+                        lastSessionKeyV2 = sessionKey;
                         isTimeUpV2 = false;
                         resetLocalInput();
                     }
