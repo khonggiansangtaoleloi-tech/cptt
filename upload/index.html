@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AnhTUXXZ • Image Manager</title>
+<style>
+:root{color-scheme:dark;--bg:#080d18;--panel:#111b2c;--line:#293a55;--muted:#94a5bf;--txt:#edf4ff;--blue:#548dff;--purple:#805cff;--green:#22c58b;--red:#ff637c}
+*{box-sizing:border-box}body{margin:0;padding:26px 16px;min-height:100vh;background:radial-gradient(ellipse at 15% 0%,#1a3154 0,transparent 42%),radial-gradient(ellipse at 90% 15%,#291d50 0,transparent 35%),var(--bg);font:15px/1.5 Segoe UI,Arial,sans-serif;color:var(--txt)}
+main{max-width:1050px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.brand{display:flex;gap:12px;align-items:center;font-size:19px;font-weight:750}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--purple));display:grid;place-items:center;font-size:24px}.muted{color:var(--muted);font-size:13px}.panel{background:#111b2ce8;border:1px solid var(--line);border-radius:19px;padding:23px;margin-bottom:18px;box-shadow:0 20px 60px #0005}h1{font-size:29px;margin:0 0 5px}h2{font-size:18px;margin:0 0 15px}.formgrid{display:grid;grid-template-columns:1.5fr 1fr;gap:12px}.field{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#091321;color:var(--txt);outline:none}.field:focus{border-color:var(--blue)}label{display:block;font-size:13px;font-weight:650;margin:13px 0 6px}.btn{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(100deg,var(--blue),var(--purple));color:white;font-weight:700;cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.btn.secondary{background:#263650}.btn.danger{background:#6b2638;color:#ffdbe2}.btn.small{padding:7px 10px;font-size:12px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.drop{border:1.5px dashed #4a6287;border-radius:14px;background:#0a1423;padding:25px;text-align:center;cursor:pointer;margin-top:15px}.drop.over{border-color:var(--blue);background:#14233b}.drop input{display:none}.fileline{display:none;margin-top:10px;color:#c8d7ee;font-size:13px}.status{display:none;margin-top:13px;padding:11px 13px;border-radius:10px;overflow-wrap:anywhere}.status.ok{display:block;background:#12372f;color:#a8f4d6}.status.err{display:block;background:#421f2b;color:#ffc3ce}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}.item{overflow:hidden;border:1px solid var(--line);border-radius:14px;background:#0b1422}.item img{width:100%;height:165px;object-fit:cover;display:block;background:#070c14;cursor:zoom-in}.itembody{padding:11px}.name{font-size:13px;font-weight:650;overflow-wrap:anywhere;min-height:38px}.itemactions{display:flex;gap:7px;margin-top:10px}.itemactions button{flex:1}.empty{padding:35px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:13px}.security{font-size:12px;color:#e9d6a5;background:#302817;border:1px solid #594a29;border-radius:10px;padding:12px;margin-top:14px}.hidden{display:none!important}.count{font-size:13px;color:var(--muted)}a{color:#9ec3ff}
+.modal-overlay{position:fixed;inset:0;background:rgba(4,8,16,.78);backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal-box{width:100%;max-width:410px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.65);transform:translateY(14px) scale(.96);transition:transform .2s ease}
+.modal-overlay.show .modal-box{transform:translateY(0) scale(1)}
+.modal-icon{width:54px;height:54px;border-radius:16px;margin:0 auto 14px;display:grid;place-items:center;font-size:26px}
+.modal-icon.ok{background:#12372f;color:var(--green);border:1px solid #1e574a}
+.modal-icon.warn{background:#421f2b;color:var(--red);border:1px solid #6b2638}
+.modal-icon.loading{background:#152542;color:var(--blue);border:1px solid #2b4575}
+.spinner{width:26px;height:26px;border:3px solid rgba(84,141,255,.25);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-title{font-size:19px;font-weight:750;margin:0 0 8px}
+.modal-msg{color:var(--muted);font-size:14px;line-height:1.55;margin:0 0 20px;overflow-wrap:anywhere}
+.modal-btns{display:flex;gap:10px;justify-content:center}
+.modal-btns button{flex:1;padding:11px 16px}
+@media(max-width:650px){.formgrid{grid-template-columns:1fr}.panel{padding:17px}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+ <div class="brand"><div class="logo">↑</div><div>AnhTu Image Manager<div class="muted">GitHub • AnhTUXXZ/upload</div></div></div>
+ <div class="muted">Upload & quản lý ảnh</div>
+</header>
+
+<section class="panel">
+ <h1>Quản lý ảnh</h1><div class="muted">Tải ảnh lên GitHub, xem ảnh đã lưu và xóa ảnh không còn cần thiết.</div>
+ <label for="token">GitHub Personal Access Token</label>
+ <input id="token" class="field" type="password" autocomplete="off" placeholder="Dán token mới tại đây (không dùng token đã bị lộ)">
+ <div class="muted" style="margin-top:6px">Token cần quyền Contents: Read and write đối với repository AnhTUXXZ/upload. Token chỉ được giữ trong bộ nhớ trang, không lưu vào trình duyệt.</div>
+
+ <div class="formgrid">
+  <div><label for="folder">Thư mục ảnh</label><input id="folder" class="field" value="uploads"></div>
+  <div><label for="branch">Branch</label><input id="branch" class="field" value="main"></div>
+ </div>
+
+ <label>Chọn ảnh để tải lên</label>
+ <div class="drop" id="drop"><strong>☁️ Kéo thả ảnh vào đây (Tự động upload)</strong><div class="muted">hoặc nhấn để chọn JPG, PNG, GIF, WEBP (tối đa 20 MB)</div><input id="file" type="file" accept="image/jpeg,image/png,image/gif,image/webp"></div>
+ <div class="fileline" id="fileline"></div>
+ <div class="actions"><button class="btn" id="upload" disabled>↑ Upload ảnh</button><button class="btn secondary" id="load">↻ Tải danh sách ảnh</button></div>
+ <div id="status" class="status" role="status"></div>
+ <div class="security"><b>Bảo mật:</b> Không đưa token vào file HTML hoặc repository công khai. Mỗi người dùng cần token có quyền ghi nếu sử dụng trực tiếp trang này. Nếu muốn khách truy cập upload/xóa mà không có token riêng, hãy dùng backend trung gian và chỉ cho phép xóa có xác thực.</div>
+</section>
+
+<section class="panel">
+ <div class="toolbar"><div><h2 style="margin-bottom:3px">Thư viện ảnh</h2><div class="count" id="count">Chưa tải danh sách</div></div><button class="btn secondary" id="refresh">Làm mới</button></div>
+ <div id="gallery" class="empty" style="margin-top:15px">Nhập token rồi nhấn “Tải danh sách ảnh”.</div>
+</section>
+</main>
+
+<div id="popupModal" class="modal-overlay" role="dialog" aria-modal="true">
+ <div class="modal-box">
+  <div id="popupIcon" class="modal-icon ok">✓</div>
+  <h3 id="popupTitle" class="modal-title">Thông báo</h3>
+  <p id="popupMsg" class="modal-msg"></p>
+  <div id="popupBtns" class="modal-btns">
+   <button id="popupCancel" class="btn secondary hidden">Hủy</button>
+   <button id="popupOk" class="btn">OK</button>
+  </div>
+ </div>
+</div>
+
+<script>
+const OWNER="AnhTUXXZ",REPO="upload";
+// Dán TOKEN THỬ NGHIỆM MỚI vào giữa hai dấu ngoặc kép bên dưới.
+// Không sử dụng token đã gửi trong cuộc trò chuyện vì token đó đã bị lộ.
+const TEST_TOKEN = "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";
+const $=id=>document.getElementById(id);
+let selected=null;
+const allowed=["image/jpeg","image/png","image/gif","image/webp"];
+
+function showLoadingPopup(title,msg){
+ const modal=$("popupModal"),icon=$("popupIcon"),btns=$("popupBtns");
+ $("popupTitle").textContent=title;
+ $("popupMsg").textContent=msg;
+ icon.className="modal-icon loading";
+ icon.innerHTML='<div class="spinner"></div>';
+ btns.classList.add("hidden");
+ modal.onclick=null;
+ modal.classList.add("show");
+}
+
+function hidePopup(){
+ $("popupModal").classList.remove("show");
+}
+
+function showPopup({title,msg,type="ok",confirmText="OK",cancelText=null}){
+ return new Promise(resolve=>{
+  const modal=$("popupModal"),icon=$("popupIcon"),btns=$("popupBtns"),okBtn=$("popupOk"),cancelBtn=$("popupCancel");
+  $("popupTitle").textContent=title;
+  $("popupMsg").textContent=msg;
+  icon.className="modal-icon "+type;
+  icon.innerHTML=type==="warn"?"🗑":"✓";
+  btns.classList.remove("hidden");
+  okBtn.textContent=confirmText;
+  okBtn.className=type==="warn"?"btn danger":"btn";
+  if(cancelText){
+   cancelBtn.textContent=cancelText;
+   cancelBtn.classList.remove("hidden");
+  }else{
+   cancelBtn.classList.add("hidden");
+  }
+  modal.classList.add("show");
+  const cleanup=res=>{
+   modal.classList.remove("show");
+   okBtn.onclick=null;
+   cancelBtn.onclick=null;
+   modal.onclick=null;
+   resolve(res);
+  };
+  okBtn.onclick=()=>cleanup(true);
+  cancelBtn.onclick=()=>cleanup(false);
+  modal.onclick=e=>{if(e.target===modal)cleanup(false)};
+ });
+}
+
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function waitForGitHubSync(c,fileName,shouldExist){
+ const apiPath=c.folder?c.folder.split("/").map(encodeURIComponent).join("/"):"";
+ for(let i=1;i<=15;i++){
+  await sleep(2000);
+  $("popupMsg").textContent=(shouldExist?"Đang chờ upload, vui lòng đợi...":"Đang xóa ảnh, vui lòng đợi...")+" (Kiểm tra lần "+i+"...)";
+  try{
+   const url=`https://api.github.com/repos/${OWNER}/${REPO}/contents/${apiPath}?ref=${encodeURIComponent(c.branch)}&t=${Date.now()}`;
+   const r=await fetch(url,{headers:apiHeaders(c.token),cache:"no-store"});
+   if(r.ok){
+    const data=await r.json();
+    if(Array.isArray(data)){
+     const exists=data.some(x=>x.type==="file"&&x.name===fileName);
+     if(exists===shouldExist)return true;
+    }
+   }else if(r.status===404&&!shouldExist){
+    return true;
+   }
+  }catch(_){}
+ }
+ return false;
+}
+
+function config(){
+ const token=$("token").value.trim(),branch=$("branch").value.trim()||"main";
+ let folder=$("folder").value.trim().replace(/^\/+|\/+$/g,"");
+ if(!token)throw Error("Bạn chưa nhập GitHub token mới.");
+ if(!/^[a-zA-Z0-9._/-]*$/.test(folder)||folder.split("/").includes(".."))throw Error("Tên thư mục không hợp lệ.");
+ return {token,branch,folder};
+}
+function apiHeaders(token){return {"Accept":"application/vnd.github+json","Authorization":"Bearer "+token,"X-GitHub-Api-Version":"2022-11-28"}}
+function showStatus(msg,type="ok"){const el=$("status");el.className="status "+type;el.textContent=msg}
+function apiError(data,status){
+ if(status===401)return "Token không hợp lệ hoặc đã hết hạn.";
+ if(status===403)return "Token thiếu quyền Contents Read and write hoặc API bị giới hạn.";
+ if(status===404)return "Không tìm thấy repository/thư mục hoặc token không có quyền.";
+ return data.message||("GitHub trả về lỗi HTTP "+status);
+}
+function choose(f){
+ if(!f)return;
+ if(!allowed.includes(f.type)){showStatus("Chỉ hỗ trợ JPG, PNG, GIF, WEBP.","err");return}
+ if(f.size>20*1024*1024){showStatus("Ảnh vượt quá 20 MB.","err");return}
+ selected=f;$("fileline").style.display="block";$("fileline").textContent="Đang tự động tải lên: "+f.name+" ("+(f.size/1024/1024).toFixed(2)+" MB)...";
+ $("upload").disabled=false;
+ upload();
+}
+$("drop").onclick=()=>$("file").click();
+$("file").onchange=e=>choose(e.target.files[0]);
+["dragenter","dragover"].forEach(n=>$("drop").addEventListener(n,e=>{e.preventDefault();$("drop").classList.add("over")}));
+["dragleave","drop"].forEach(n=>$("drop").addEventListener(n,e=>{e.preventDefault();$("drop").classList.remove("over")}));
+$("drop").addEventListener("drop",e=>choose(e.dataTransfer.files[0]));
+function base64(file){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=()=>rej(Error("Không đọc được file."));r.readAsDataURL(file)})}
+function safeName(name){
+ let i=name.lastIndexOf("."),ext=i>=0?name.slice(i).toLowerCase():".jpg";
+ let base=(i>=0?name.slice(0,i):name).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,55)||"image";
+ return base+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)+ext;
+}
+async function upload(){
+ let c;try{c=config()}catch(e){showStatus(e.message,"err");return}
+ if(!selected)return;
+ const file=selected,newFileName=safeName(file.name),path=(c.folder?c.folder+"/":"")+newFileName;
+ $("upload").disabled=true;
+ showStatus("Đang upload ảnh lên GitHub...","ok");
+ showLoadingPopup("Đang tải ảnh lên...","Đang chờ upload, vui lòng đợi...");
+ try{
+  const content=await base64(file);
+  const url="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+path.split("/").map(encodeURIComponent).join("/");
+  const r=await fetch(url,{method:"PUT",headers:{...apiHeaders(c.token),"Content-Type":"application/json"},body:JSON.stringify({message:"Upload image: "+newFileName,content,branch:c.branch})});
+  const d=await r.json();if(!r.ok)throw Error(apiError(d,r.status));
+  await waitForGitHubSync(c,newFileName,true);
+  selected=null;$("file").value="";$("fileline").style.display="none";$("upload").disabled=true;
+  showStatus("Upload thành công: "+path);
+  await showPopup({title:"Thành công!",msg:"Ảnh đã được tải lên GitHub và đồng bộ thành công.",type:"ok",confirmText:"OK"});
+  await loadImages();
+ }catch(e){
+  hidePopup();
+  showStatus("Upload thất bại: "+e.message,"err");
+ }
+ finally{$("upload").disabled=!selected}
+}
+async function copyImageUrl(url,btn){
+ try{
+  await navigator.clipboard.writeText(url);
+  const oldText=btn.textContent;
+  btn.textContent="Đã copy!";
+  btn.style.background="var(--green)";
+  btn.style.color="#051c14";
+  showStatus("Đã copy link ảnh: "+url,"ok");
+  setTimeout(()=>{btn.textContent=oldText;btn.style.background="";btn.style.color="";},1500);
+ }catch(e){
+  const tmp=document.createElement("textarea");tmp.value=url;document.body.appendChild(tmp);tmp.select();document.execCommand("copy");document.body.removeChild(tmp);
+  const oldText=btn.textContent;
+  btn.textContent="Đã copy!";
+  showStatus("Đã copy link ảnh: "+url,"ok");
+  setTimeout(()=>{btn.textContent=oldText;},1500);
+ }
+}
+async function loadImages(){
+ let c;try{c=config()}catch(e){showStatus(e.message,"err");return}
+ $("gallery").className="empty";$("gallery").textContent="Đang tải danh sách ảnh...";
+ try{
+  const apiPath=c.folder?c.folder.split("/").map(encodeURIComponent).join("/"):"";
+  const url=`https://api.github.com/repos/${OWNER}/${REPO}/contents/${apiPath}?ref=${encodeURIComponent(c.branch)}&t=${Date.now()}`;
+  const r=await fetch(url,{headers:apiHeaders(c.token),cache:"no-store"}),data=await r.json();
+  if(!r.ok)throw Error(apiError(data,r.status));
+  if(!Array.isArray(data))throw Error("Đường dẫn này không phải thư mục.");
+  const images=data.filter(x=>x.type==="file"&&/\.(jpe?g|png|gif|webp)$/i.test(x.name));
+  $("count").textContent=images.length+" ảnh trong "+(c.folder||"repository root");
+  if(!images.length){$("gallery").className="empty";$("gallery").textContent="Chưa có ảnh trong thư mục này.";return}
+  $("gallery").className="gallery";$("gallery").innerHTML="";
+  images.sort((a,b)=>b.name.localeCompare(a.name));
+  for(const item of images){
+   const card=document.createElement("article");card.className="item";
+   const img=document.createElement("img");img.loading="lazy";img.alt=item.name;img.src=item.download_url;img.title="Nhấn để xem ảnh lớn";
+   img.onclick=()=>window.open(item.download_url,"_blank","noopener");
+   const body=document.createElement("div");body.className="itembody";
+   const name=document.createElement("div");name.className="name";name.textContent=item.name;
+   const meta=document.createElement("div");meta.className="muted";meta.textContent=(item.size/1024).toFixed(1)+" KB";
+   const actions=document.createElement("div");actions.className="itemactions";
+   const view=document.createElement("button");view.className="btn secondary small";view.textContent="Xem";view.onclick=()=>window.open(item.download_url,"_blank","noopener");
+   const copy=document.createElement("button");copy.className="btn small";copy.textContent="Copy";copy.onclick=()=>copyImageUrl(item.download_url,copy);
+   const del=document.createElement("button");del.className="btn danger small";del.textContent="Xóa";
+   del.onclick=()=>deleteImage(item,del);
+   actions.append(view,copy,del);body.append(name,meta,actions);card.append(img,body);$("gallery").append(card);
+  }
+ }catch(e){$("gallery").className="empty";$("gallery").textContent="Không tải được danh sách: "+e.message;showStatus(e.message,"err")}
+}
+async function deleteImage(item,button){
+ let c;try{c=config()}catch(e){showStatus(e.message,"err");return}
+ const accepted=await showPopup({
+  title:"Xác nhận xóa ảnh",
+  msg:"Bạn chắc chắn muốn xóa \""+item.name+"\" khỏi GitHub? Thao tác này không thể hoàn tác.",
+  type:"warn",
+  confirmText:"Xóa ngay",
+  cancelText:"Hủy"
+ });
+ if(!accepted)return;
+ button.disabled=true;button.textContent="Đang xóa...";
+ showLoadingPopup("Đang xóa ảnh...","Đang chờ xóa ảnh khỏi GitHub, vui lòng đợi...");
+ try{
+  const path=item.path.split("/").map(encodeURIComponent).join("/");
+  const url=`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`;
+  const r=await fetch(url,{method:"DELETE",headers:{...apiHeaders(c.token),"Content-Type":"application/json"},body:JSON.stringify({message:"Delete image: "+item.name,sha:item.sha,branch:c.branch})});
+  const d=await r.json();if(!r.ok)throw Error(apiError(d,r.status));
+  await waitForGitHubSync(c,item.name,false);
+  showStatus("Đã xóa ảnh: "+item.name);
+  await showPopup({title:"Đã xóa thành công!",msg:"Ảnh \""+item.name+"\" đã được xóa khỏi GitHub.",type:"ok",confirmText:"OK"});
+  await loadImages();
+ }catch(e){
+  hidePopup();
+  button.disabled=false;button.textContent="Xóa";
+  showStatus("Xóa thất bại: "+e.message,"err");
+ }
+}
+$("upload").onclick=upload;$("load").onclick=loadImages;$("refresh").onclick=loadImages;
+
+// Tự điền token vào ô nhập và tự động tải danh sách ảnh khi mở trang
+if (TEST_TOKEN && TEST_TOKEN.trim() !== "") {
+  $("token").value = TEST_TOKEN.trim();
+  loadImages();
+}
+</script>
+</body>
+</html>
