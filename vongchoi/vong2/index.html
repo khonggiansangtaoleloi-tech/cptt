@@ -904,36 +904,6 @@
 
     <script>
         // ==========================================
-// ĐỒNG BỘ GIỜ CHUẨN VỚI MÁY CHỦ FIREBASE
-// ==========================================
-let serverTimeOffset = 0;
-
-function getServerNow() {
-    return Date.now() + serverTimeOffset;
-}
-
-async function syncServerClock(fbBaseUrl) {
-    if (!fbBaseUrl) return;
-    const clientId = "c_" + Math.random().toString(36).slice(2, 10);
-    const url = `${fbBaseUrl}/_clock_sync/${clientId}.json`;
-    try {
-        const t0 = Date.now();
-        const res = await fetch(url, {
-            method: "PUT",
-            body: JSON.stringify({ ".sv": "timestamp" })
-        });
-        const serverTs = await res.json();
-        const t1 = Date.now();
-        if (typeof serverTs === "number") {
-            serverTimeOffset = serverTs - Math.round((t0 + t1) / 2);
-        }
-        fetch(url, { method: "DELETE" }).catch(() => {});
-    } catch (e) {
-        console.warn("Không thể đồng bộ giờ máy chủ:", e);
-    }
-}
-
-        // ==========================================
         // 1. CẤU HÌNH API FIREBASE
         // ==========================================
         const API_VONG2_CFG = "../../api/vong2.json";
@@ -1049,7 +1019,6 @@ async function syncServerClock(fbBaseUrl) {
 
                 FB_VONG2 = cfgUrl.replace(/\.json$/, "").replace(/\/$/, "");
                 FB_DIEMSO = FB_VONG2.replace(/\/vong2$/, "") + "/diemso";
-            await syncServerClock(FB_VONG2);
             } catch (e) {
                 console.error("Lỗi đọc cấu hình Firebase:", e);
             }
@@ -1083,7 +1052,7 @@ async function syncServerClock(fbBaseUrl) {
             if (!curQ) return 0;
             if (timerPausedV2) return Math.max(0, timerRemainingV2);
             if (!endTimeTimestampV2) return 0;
-            return Math.max(0, endTimeTimestampV2 - getServerNow());
+            return Math.max(0, endTimeTimestampV2 - Date.now());
         }
 
         function hasSubmittedCurrentQuestion() {
@@ -1296,7 +1265,8 @@ async function syncServerClock(fbBaseUrl) {
                         if (timerRemainingV2 > 0) isTimeUpV2 = false;
                     } else if (state.timerEndTime) {
                         endTimeTimestampV2 = Number(state.timerEndTime);
-                if (endTimeTimestampV2 > getServerNow()) isTimeUpV2 = false;                    }
+                        if (endTimeTimestampV2 > Date.now()) isTimeUpV2 = false;
+                    }
                 }
 
                 updatePlayerCardUI();
@@ -1305,7 +1275,7 @@ async function syncServerClock(fbBaseUrl) {
             } catch (e) {
                 console.error("Lỗi đồng bộ trạng thái V2:", e);
             } finally {
-                setTimeout(fetchGameStateLoop, 500);
+                setTimeout(fetchGameStateLoop, 1000);
             }
         }
 
