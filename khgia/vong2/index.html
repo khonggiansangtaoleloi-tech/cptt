@@ -861,6 +861,36 @@
 
     <script>
         // ==========================================
+// ĐỒNG BỘ GIỜ CHUẨN VỚI MÁY CHỦ FIREBASE
+// ==========================================
+let serverTimeOffset = 0;
+
+function getServerNow() {
+    return Date.now() + serverTimeOffset;
+}
+
+async function syncServerClock(fbBaseUrl) {
+    if (!fbBaseUrl) return;
+    const clientId = "c_" + Math.random().toString(36).slice(2, 10);
+    const url = `${fbBaseUrl}/_clock_sync/${clientId}.json`;
+    try {
+        const t0 = Date.now();
+        const res = await fetch(url, {
+            method: "PUT",
+            body: JSON.stringify({ ".sv": "timestamp" })
+        });
+        const serverTs = await res.json();
+        const t1 = Date.now();
+        if (typeof serverTs === "number") {
+            serverTimeOffset = serverTs - Math.round((t0 + t1) / 2);
+        }
+        fetch(url, { method: "DELETE" }).catch(() => {});
+    } catch (e) {
+        console.warn("Không thể đồng bộ giờ máy chủ:", e);
+    }
+}
+
+        // ==========================================
         // 1. CẤU HÌNH FIREBASE & ÂM THANH VÒNG 2
         // ==========================================
         const apiUrlHost = "../../";
@@ -1088,8 +1118,8 @@
 
             const dist = timerPausedV2
                 ? Math.max(0, timerRemainingV2)
-                : (endTimeTimestampV2 ? endTimeTimestampV2 - Date.now() : 0);
-
+                : (endTimeTimestampV2 ? endTimeTimestampV2 - getServerNow() : 0);
+                
             if (dist <= 0) {
                 timerEl.innerText = "0.0";
                 timerEl.className = "";
@@ -1293,8 +1323,7 @@
                     } else if (state.timerEndTime) {
                         endTimeTimestampV2 = Number(state.timerEndTime);
                     } else if (!endTimeTimestampV2) {
-                        endTimeTimestampV2 = Date.now() + 30000;
-                    }
+                endTimeTimestampV2 = getServerNow() + 30000;                    }
                 }
 
                 ['1', '2', '3', '4'].forEach(p => {
@@ -1509,9 +1538,10 @@
             setInterval(updateAudienceTimer, 100);
 
             await loadFbConfig();
+            await syncServerClock(FB.vong2);
             await fetchTeamNames();
             setInterval(fetchScoresFromAPI, 1000);
-            setInterval(fetchVong2Data, 1000);
+            setInterval(fetchVong2Data, 500);
         };
     </script>
 </body>
