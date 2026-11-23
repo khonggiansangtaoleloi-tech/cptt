@@ -267,14 +267,14 @@ window.V1C = (function () {
             text-shadow: 0 0 18px rgba(255, 216, 77, 0.85);
         }
 
-        /* ================= KHUNG CÂU HỎI ================= */
+        /* ================= KHUNG CÂU HỎI & BỐ CỤC ẢNH (GIỐNG KHÁN GIẢ) ================= */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 30px;
+            padding: 25px 30px;
             width: 100%;
             box-sizing: border-box;
             overflow: hidden;
@@ -283,9 +283,9 @@ window.V1C = (function () {
             background: rgba(255, 255, 255, 0.12);
             border: 3px solid #7fe3ff;
             border-radius: 15px;
-            padding: 50px 45px;
-            width: 85%;
-            max-width: 1320px;
+            padding: 35px 45px;
+            width: 90%;
+            max-width: 1450px;
             font-size: 2rem;
             line-height: 1.6;
             display: flex;
@@ -308,8 +308,8 @@ window.V1C = (function () {
 
         .subject-tag {
             color: #ffd84d;
-            font-size: 2.5rem;
-            margin-bottom: 25px;
+            font-size: 2.4rem;
+            margin-bottom: 20px;
             font-weight: 900;
             letter-spacing: 2px;
             text-shadow: 0 0 12px rgba(255, 216, 77, 0.55), 0 2px 6px rgba(0,0,0,0.8);
@@ -321,21 +321,74 @@ window.V1C = (function () {
             font-size: 2.8rem;
             font-weight: 800;
             color: #ffffff;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             line-height: 1.5;
             text-shadow: 0 2px 8px rgba(0,0,0,0.7);
             white-space: pre-wrap;
         }
 
+        /* Bố cục chia đôi: Câu hỏi bên trái - Khung ảnh bên phải */
+        .q-split-container {
+            display: flex;
+            gap: 35px;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            text-align: left;
+            width: 100%;
+        }
+        .q-left-panel {
+            flex: 1.1;
+            text-align: left;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+            font-weight: 800;
+            font-size: 2.4rem;
+            line-height: 1.5;
+            color: #ffffff;
+            white-space: pre-wrap;
+        }
+        .q-right-panel {
+            flex: 0.9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.45);
+            border: 3px solid #7fe3ff;
+            border-radius: 16px;
+            padding: 12px;
+            min-height: 280px;
+            box-shadow: inset 0 0 20px rgba(127, 227, 255, 0.25), 0 8px 25px rgba(0,0,0,0.5);
+        }
+        .q-image {
+            max-width: 100%;
+            max-height: 360px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: #ffffff;
+            padding: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .img-error-box {
+            color: #ffd84d;
+            font-size: 1.3rem;
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #ff4b2b;
+            border-radius: 10px;
+            background: rgba(255, 75, 43, 0.15);
+            line-height: 1.4;
+        }
+
         /* Hộp hiển thị đáp án được mở */
         .ans-opened-box {
-            margin-top: 20px;
+            margin-top: 16px;
             background: rgba(92, 240, 160, 0.2);
             border: 3px solid #5cf0a0;
-            padding: 20px 40px;
+            padding: 16px 40px;
             border-radius: 12px;
             color: #7dffb4;
-            font-size: 2.5rem;
+            font-size: 2.4rem;
             font-weight: 900;
             text-transform: uppercase;
             animation: fadeInAns 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -347,9 +400,6 @@ window.V1C = (function () {
         .answer-content {
             color: #ffd84d;
             text-shadow: 0 0 12px rgba(255, 216, 77, 0.55), 0 2px 6px rgba(0,0,0,0.8);
-            display: block;
-            margin-top: 10px;
-            font-size: 3rem;
         }
 
         @keyframes fadeInAns { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
@@ -425,6 +475,28 @@ window.V1C = (function () {
                 const txt = sec + "s";
                 if (valEl.innerText !== txt) valEl.innerText = txt;
             }
+        }
+
+        // ================= XỬ LÝ LINK ẢNH CÂU HỎI =================
+        function resolveImageUrl(qObj) {
+            if (!qObj) return null;
+            const raw = qObj.url || qObj.anh || qObj.linkAnh || qObj.hinhanh || qObj.hinh_anh || qObj.image || qObj.img || qObj.url_anh || "";
+            if (typeof raw !== "string") return null;
+
+            const imgName = raw.trim();
+            if (imgName === "" || imgName.toUpperCase() === "NULL" || imgName === "undefined") return null;
+
+            const driveMatch = imgName.match(/[-\w]{25,}/);
+            if (imgName.includes("drive.google.com") && driveMatch) {
+                return "https://drive.google.com/thumbnail?id=" + driveMatch[0] + "&sz=w1200";
+            }
+            if (!imgName.includes(".") && !imgName.includes("/") && imgName.length >= 25) {
+                return "https://drive.google.com/thumbnail?id=" + imgName + "&sz=w1200";
+            }
+            if (imgName.startsWith("http://") || imgName.startsWith("https://")) {
+                return imgName;
+            }
+            return "../../img/vong1_chung/" + imgName;
         }
 
         // ================= TỰ ĐỘNG ĐỌC CẤU TRÚC FIREBASE =================
@@ -547,7 +619,8 @@ window.V1C = (function () {
                         const statusAns = (Number(q.statusdapan) === 1 || q.statusdapan === true) ? 1 : 0;
                         const qText = q.cauhoi || q.noiDung || "";
                         const ansText = q.danan || q.dapan || q.dapAn || "Đang tải dữ liệu đáp án...";
-                        const renderKey = `${stt}|${statusAns}|${qText}|${ansText}`;
+                        const imgLink = resolveImageUrl(q) || "";
+                        const renderKey = `${stt}|${statusAns}|${qText}|${ansText}|${imgLink}`;
 
                         if (statusAns === 1) {
                             hideTimerBox();
@@ -556,10 +629,22 @@ window.V1C = (function () {
                         if (lastRenderKey !== renderKey) {
                             lastRenderKey = renderKey;
                             let html = `<div class="subject-tag">CÂU HỎI SỐ ${esc(stt)}</div>`;
-                            html += `<div class="question-text-display">${esc(qText)}</div>`;
+
+                            if (imgLink) {
+                                html += `
+                                    <div class="q-split-container">
+                                        <div class="q-left-panel">${esc(qText)}</div>
+                                        <div class="q-right-panel">
+                                            <img class="q-image" src="${esc(imgLink)}" onerror="this.outerHTML='<div class=\\'img-error-box\\'>⚠️ Không tải được ảnh!<br><small style=\\'color:#fff;\\'>Đường dẫn: ${esc(imgLink)}</small></div>'">
+                                        </div>
+                                    </div>
+                                `;
+                            } else {
+                                html += `<div class="question-text-display">${esc(qText)}</div>`;
+                            }
 
                             if (statusAns === 1) {
-                                html += `<div class="ans-opened-box">ĐÁP ÁN:<span class="answer-content">${esc(ansText)}</span></div>`;
+                                html += `<div class="ans-opened-box">ĐÁP ÁN: <span class="answer-content">${esc(ansText)}</span></div>`;
                             }
 
                             qBox.innerHTML = html;

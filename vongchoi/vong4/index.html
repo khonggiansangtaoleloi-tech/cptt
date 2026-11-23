@@ -133,9 +133,9 @@ window.V4 = (function () {
         .reset-btn:hover { opacity: 1; transform: rotate(180deg); }
         .main-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; overflow: hidden; }
 
-        .question-box { background: rgba(0, 15, 30, 0.85); border: 3px solid #56ccf2; border-radius: 20px; padding: 25px 40px; width: 95%; max-width: 1450px; font-size: 2.6rem; line-height: 1.5; box-shadow: 0 0 30px rgba(86, 204, 242, 0.2), inset 0 0 20px rgba(86, 204, 242, 0.1); margin-bottom: 15px; text-align: center; position: relative; }
+        .question-box { background: rgba(0, 15, 30, 0.85); border: 3px solid #56ccf2; border-radius: 20px; padding: 25px 40px; width: 95%; max-width: 1480px; font-size: 2.6rem; line-height: 1.5; box-shadow: 0 0 30px rgba(86, 204, 242, 0.2), inset 0 0 20px rgba(86, 204, 242, 0.1); margin-bottom: 15px; text-align: center; position: relative; box-sizing: border-box; }
 
-        .tags-container { margin-bottom: 20px; }
+        .tags-container { margin-bottom: 18px; }
         .info-tag { display: inline-block; background: linear-gradient(135deg, #0052cc, #003d99); padding: 10px 25px; border-radius: 30px; font-size: 1.5rem; margin: 0 10px; font-family: 'Montserrat', sans-serif; text-transform: uppercase; border: 1px solid #56ccf2; }
         .star-tag { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; border: 2px solid #fff; box-shadow: 0 0 25px #ffd700; animation: pulseStar 1.5s infinite; }
 
@@ -145,20 +145,20 @@ window.V4 = (function () {
             gap: 35px;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
+            margin-top: 10px;
             text-align: left;
             width: 100%;
         }
         .q-left-panel {
-            flex: 1.1;
+            flex: 1.15;
             text-align: left;
             font-weight: 700;
-            font-size: 2.4rem;
-            line-height: 1.5;
+            font-size: 2.3rem;
+            line-height: 1.45;
             white-space: pre-wrap;
         }
         .q-right-panel {
-            flex: 0.9;
+            flex: 0.85;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -166,12 +166,12 @@ window.V4 = (function () {
             border: 3px solid #56ccf2;
             border-radius: 16px;
             padding: 12px;
-            min-height: 280px;
+            min-height: 260px;
             box-shadow: inset 0 0 20px rgba(86, 204, 242, 0.25), 0 8px 25px rgba(0,0,0,0.5);
         }
         .q-image {
             max-width: 100%;
-            max-height: 360px;
+            max-height: 340px;
             border-radius: 10px;
             object-fit: contain;
             background: #ffffff;
@@ -187,6 +187,34 @@ window.V4 = (function () {
             border-radius: 10px;
             background: rgba(255, 75, 43, 0.15);
             line-height: 1.4;
+        }
+
+        /* ================= KHUNG ĐÁP ÁN DÀI (PHƯƠNG ÁN 1) ================= */
+        .ans-long-heading {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 900;
+            color: #28d160;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+        }
+        .ans-long-box {
+            background: rgba(0, 0, 0, 0.65);
+            border: 3px solid #28a745;
+            border-radius: 16px;
+            padding: 24px 36px;
+            color: #ffd700;
+            font-weight: 800;
+            font-style: normal;
+            text-align: left;
+            white-space: pre-wrap;
+            line-height: 1.48;
+            box-shadow: 0 0 25px rgba(40, 167, 69, 0.55);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .footer { display: flex; justify-content: space-between; align-items: flex-end; padding: 15px 80px 30px 80px; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%); }
@@ -212,6 +240,7 @@ window.V4 = (function () {
         @keyframes pulseStar { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         .msg-box { font-size: 2.4rem; color: #a0c4ff; font-style: italic; }
+        .ans-short-box { color: #ffd700; font-size: 3.8rem; font-style: normal; font-weight: 900; background: rgba(0,0,0,0.7); padding: 12px 40px; border-radius: 15px; display: inline-block; margin-top: 10px; border: 3px solid #28a745; box-shadow: 0 0 25px rgba(40,167,69,0.6); }
     </style>
 </head>
 <body>
@@ -347,7 +376,6 @@ window.V4 = (function () {
             }
         }
 
-        // Tự động tìm câu hỏi trong question_bank, CauHoiV4, cấp 1 hoặc bất kỳ nhánh con nào của vong4
         function findQuestion(fullData, qId) {
             if (!fullData || !qId) return null;
             const key = String(qId);
@@ -401,19 +429,54 @@ window.V4 = (function () {
             return "../../img/vong4/" + imgName;
         }
 
-        function buildQuestionContent(data) {
+        // Tự động tính cỡ chữ câu hỏi theo độ dài để không tràn khung
+        function getQuestionFontSize(text, hasImage) {
+            const len = String(text || "").length;
+            const lines = String(text || "").split('\n').length;
+            if (hasImage) {
+                if (len > 260 || lines >= 6) return "1.75rem";
+                if (len > 170 || lines >= 4) return "2rem";
+                return "2.35rem";
+            }
+            if (len > 280 || lines >= 6) return "1.9rem";
+            if (len > 180 || lines >= 4) return "2.2rem";
+            return "2.6rem";
+        }
+
+        // Tự động tính cỡ chữ đáp án dài (Phương án 1)
+        function isLongAnswer(ansText) {
+            const s = String(ansText || "").trim();
+            return s.length > 55 || s.includes('\n');
+        }
+
+        function getLongAnswerFontSize(ansText) {
+            const s = String(ansText || "").trim();
+            const lines = s.split('\n').length;
+            if (s.length > 340 || lines >= 7) return "1.75rem";
+            if (s.length > 220 || lines >= 5) return "2.05rem";
+            if (s.length > 120 || lines >= 3) return "2.35rem";
+            return "2.7rem";
+        }
+
+        function buildTagsHtml(data) {
             const starHtml = data.ngoiSao ? `<span class="info-tag star-tag">⭐ NGÔI SAO HY VỌNG</span>` : "";
             const teamHtml = `<span class="info-tag">CHỦ NHÀ: ${esc(data.doiDangThi)}</span>`;
             const ptsHtml = `<span class="info-tag" style="border-color:#28a745;">CÂU ${esc(data.mucDiem)} ĐIỂM</span>`;
+            return `<div class="tags-container">${teamHtml} ${ptsHtml} ${starHtml}</div>`;
+        }
 
-            const questionText = data.question ? esc(data.question.noiDung) : "Đang tải nội dung...";
+        function buildQuestionContent(data) {
+            const tagsHtml = buildTagsHtml(data);
+            const rawText = data.question ? data.question.noiDung : "Đang tải nội dung...";
+            const questionText = esc(rawText);
             const imgLink = resolveImageUrl(data.question);
+            const qFontSize = getQuestionFontSize(rawText, !!imgLink);
 
             if (imgLink) {
                 return `
-                    <div class="tags-container">${teamHtml} ${ptsHtml} ${starHtml}</div>
+                    ${tagsHtml}
                     <div class="q-split-container">
-                        <div class="q-left-panel">${questionText}</div>
+                        <div class="q-left-panel" style="font-size:${qFontSize};">${questionText}</div>
                         <div class="q-right-panel">
                             <img class="q-image" src="${esc(imgLink)}" onerror="this.outerHTML='<div class=\\'img-error-box\\'>⚠️ Không tải được ảnh!<br><small style=\\'color:#fff;\\'>Đường dẫn: ${esc(imgLink)}</small></div>'">
                         </div>
@@ -421,8 +484,18 @@ window.V4 = (function () {
                 `;
             }
             return `
-                <div class="tags-container">${teamHtml} ${ptsHtml} ${starHtml}</div>
-                <div style="text-align: center; white-space: pre-wrap; line-height: 1.6;">${questionText}</div>
+                ${tagsHtml}
+                <div style="text-align: center; white-space: pre-wrap; line-height: 1.5; font-size:${qFontSize};">${questionText}</div>
+            `;
+        }
+
+        function buildLongAnswerContent(data, rawAns) {
+            const tagsHtml = buildTagsHtml(data);
+            const ansFontSize = getLongAnswerFontSize(rawAns);
+            return `
+                ${tagsHtml}
+                <div class="ans-long-heading">ĐÁP ÁN CHÍNH THỨC CỦA CHƯƠNG TRÌNH</div>
+                <div class="ans-long-box" style="font-size:${ansFontSize};">${esc(rawAns)}</div>
             `;
         }
 
@@ -474,12 +547,8 @@ window.V4 = (function () {
                 setHTML(actArea, '');
             }
             else if (data.trangThaiGame === "Cho") {
-                const starHtml = data.ngoiSao ? `<span class="info-tag star-tag">⭐ NGÔI SAO HY VỌNG</span>` : "";
-                const teamHtml = `<span class="info-tag">CHỦ NHÀ: ${esc(data.doiDangThi)}</span>`;
-                const ptsHtml = `<span class="info-tag" style="border-color:#28a745;">CÂU ${esc(data.mucDiem)} ĐIỂM</span>`;
-
                 setHTML(qBox, `
-                    <div class="tags-container">${teamHtml} ${ptsHtml} ${starHtml}</div>
+                    ${buildTagsHtml(data)}
                     <span style='font-size: 5rem; color: #56ccf2; letter-spacing: 15px; font-weight: bold;'>???</span>
                 `);
 
@@ -493,9 +562,14 @@ window.V4 = (function () {
                 }
             }
             else if (data.trangThaiGame === "HienDapAn") {
-                setHTML(qBox, buildQuestionContent(data));
-                const offAns = data.question ? esc(data.question.dapAn || "Không có đáp án") : "Không có đáp án";
-                setHTML(actArea, `<div class="msg-box" style="color:#28a745; font-weight:bold; font-size: 2.2rem; text-align:center;">ĐÁP ÁN CHÍNH THỨC CỦA CHƯƠNG TRÌNH:<br><span style="color:#ffd700; font-size: 4rem; background:rgba(0,0,0,0.7); padding:12px 40px; border-radius:15px; display:inline-block; margin-top:10px; border: 3px solid #28a745; box-shadow: 0 0 25px rgba(40,167,69,0.6);">${offAns}</span></div>`);
+                const rawAns = data.question ? (data.question.dapAn || "Không có đáp án") : "Không có đáp án";
+                if (isLongAnswer(rawAns)) {
+                    setHTML(qBox, buildLongAnswerContent(data, rawAns));
+                    setHTML(actArea, '');
+                } else {
+                    setHTML(qBox, buildQuestionContent(data));
+                    setHTML(actArea, `<div class="msg-box" style="color:#28d160; font-weight:bold; font-size: 2.1rem; font-style:normal; text-align:center;">ĐÁP ÁN CHÍNH THỨC CỦA CHƯƠNG TRÌNH:<br><span class="ans-short-box">${esc(rawAns)}</span></div>`);
+                }
             }
             else if (data.trangThaiGame === "ChonCauHoi" || data.trangThaiGame === "ChuanBi" || !data.cauHoiHienTai || data.cauHoiHienTai === "") {
                 const usedSet = new Set(data.usedQuestions ? data.usedQuestions.split(',').map(s => s.trim()).filter(Boolean) : []);
